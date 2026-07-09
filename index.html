@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="A playful online photobooth — take a strip solo, or make one together with someone on another laptop, live." />
+  <title>Photo Arcade — online photobooth</title>
+  <link rel="icon" href="./favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;700&family=Dancing+Script:wght@500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <h1><span class="mag">MuFaaSat</span> <span class="cyan">Photo Arcade</span></h1>
+  <p class="tagline">because my girl decided to be a 1000 miles away :)</p>
+  <p class="sub">★ INSERT COIN · STRIKE A POSE ★</p>
+
+  <div class="session" role="group" aria-label="Session">
+    <button id="sessSolo" aria-pressed="true">Solo</button>
+    <button id="sessDuo" aria-pressed="false">Together ★</button>
+  </div>
+
+  <!-- Movable camera units. JS drops these into the active strip slot(s). -->
+  <div class="cam" id="camYou" hidden>
+    <video id="video" playsinline muted></video>
+    <div class="flash" id="flash"></div>
+    <div class="count" id="count"></div>
+    <div class="cam-tag you" id="camYouTag">YOU</div>
+  </div>
+  <div class="cam" id="camPartner" hidden>
+    <video id="partnerVideo" playsinline autoplay></video>
+    <div class="cam-wait" id="partnerWaiting"><span class="coin">WAITING…</span></div>
+    <div class="cam-tag partner">PARTNER</div>
+  </div>
+
+  <!-- ============================ SOLO ============================ -->
+  <div id="soloPanel">
+    <div class="modes" role="group" aria-label="Capture mode">
+      <button id="modeStrip" aria-pressed="true">Strip</button>
+      <button id="modeSingle" aria-pressed="false">Single</button>
+    </div>
+
+    <div class="boothwrap">
+      <div class="stripbooth strip--neon" id="soloStrip" aria-label="photo strip"></div>
+    </div>
+
+    <div class="hint" id="soloHint">
+      <div class="coin">INSERT COIN</div>
+      <p>Press <b>Start camera</b> and allow access. Every shot is developed right here in your browser.</p>
+    </div>
+    <div class="hint hidden" id="soloError"><div class="tag">GAME OVER</div><p id="soloErrMsg">Camera unavailable.</p></div>
+
+    <div class="controls" id="soloControls">
+      <div class="ctrl-block">
+        <span class="label">Filter <em>(live)</em></span>
+        <div class="filters" id="filters"></div>
+      </div>
+      <div class="ctrl-block">
+        <span class="label">Strip style</span>
+        <div class="filters" id="soloTemplates"></div>
+      </div>
+      <div class="ctrl-block">
+        <span class="label">Width</span>
+        <div class="filters" id="soloWidths"></div>
+      </div>
+      <div class="shots" id="shotsRow">
+        <span>Poses</span>
+        <button id="shotsMinus" aria-label="fewer poses">–</button>
+        <b id="shotsVal">3</b>
+        <button id="shotsPlus" aria-label="more poses">+</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="startBtn">▶ Start Camera</button>
+        <button class="btn hidden" id="shootBtn">◉ Start strip</button>
+        <button class="btn ghost hidden" id="saveOpenBtn">★ Review &amp; Save</button>
+        <button class="btn ghost hidden" id="stopBtn">◼ Stop</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================== TOGETHER ========================== -->
+  <div id="duoPanel" class="hidden">
+    <div class="lobby" id="lobby">
+      <p>Make one strip together while you're apart. One of you creates a room, shares the code, the other joins — then you pose together with a synced countdown. Photos go straight between your two browsers, encrypted, never stored.</p>
+      <div class="code-box" id="createBox"><button class="btn" id="createBtn">＋ Create a room</button></div>
+      <div class="code-box hidden" id="myCodeBox">
+        <span class="label">Your room code</span>
+        <div class="code" id="myCode">------</div>
+        <div class="row">
+          <button class="btn small" id="copyCodeBtn">⧉ Copy code</button>
+          <button class="btn ghost small" id="copyLinkBtn">🔗 Copy invite link</button>
+        </div>
+      </div>
+      <div class="divider" id="orDivider">— OR —</div>
+      <div class="join" id="joinBox">
+        <input id="joinInput" maxlength="8" placeholder="ENTER CODE" autocomplete="off" spellcheck="false" />
+        <button class="btn ghost small" id="joinBtn">Join →</button>
+      </div>
+      <div class="status wait hidden" id="duoStatus"></div>
+    </div>
+
+    <div class="boothwrap hidden" id="duoBoothWrap">
+      <div class="stripbooth duo strip--neon" id="duoStrip" aria-label="shared photo strip"></div>
+    </div>
+
+    <div class="controls hidden" id="duoControls">
+      <div class="ctrl-block">
+        <span class="label">Your filter <em>(live)</em></span>
+        <div class="filters" id="duoFilters"></div>
+      </div>
+      <div class="ctrl-block">
+        <span class="label">Strip style</span>
+        <div class="filters" id="duoTemplates"></div>
+      </div>
+      <div class="ctrl-block">
+        <span class="label">Width <em>(closer = together)</em></span>
+        <div class="filters" id="duoWidths"></div>
+      </div>
+      <div class="shots" id="duoShotsRow">
+        <span>Poses</span>
+        <button id="duoShotsMinus" aria-label="fewer poses">–</button>
+        <b id="duoShotsVal">3</b>
+        <button id="duoShotsPlus" aria-label="more poses">+</button>
+      </div>
+      <div class="row">
+        <button class="btn" id="duoShootBtn" disabled>◉ Shoot together</button>
+        <button class="btn ghost hidden" id="duoSaveOpenBtn">★ Review &amp; Save</button>
+        <button class="btn ghost" id="duoLeaveBtn">Leave room</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SAVE / CUSTOMIZE ===================== -->
+  <div class="save hidden" id="saveView">
+    <div class="save-inner">
+      <div class="save-preview"><canvas id="saveCanvas"></canvas></div>
+      <div class="save-opts">
+        <div class="prize">★ YOUR STRIP ★</div>
+        <div class="ctrl-block">
+          <span class="label">Style</span>
+          <div class="filters" id="saveTemplates"></div>
+        </div>
+        <div class="ctrl-block">
+          <span class="label">Background</span>
+          <div class="swatches" id="saveSwatches"></div>
+        </div>
+        <div class="ctrl-block">
+          <span class="label">Caption</span>
+          <input id="captionInput" class="cap-input" maxlength="28" placeholder="add names or a message…" />
+        </div>
+        <div class="toggles">
+          <label class="tog"><input type="checkbox" id="dateToggle" checked /> <span>Show date</span></label>
+          <label class="tog"><input type="checkbox" id="doubleToggle" /> <span>Double strip (2 up)</span></label>
+        </div>
+        <div class="row">
+          <button class="btn" id="downloadBtn">⤓ Save PNG</button>
+          <button class="btn ghost" id="saveRetake">↺ Retake</button>
+          <button class="btn ghost" id="saveClose">✕ Close</button>
+        </div>
+        <div class="note" id="saveNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
