@@ -164,7 +164,7 @@ function freezeSlot(slot: HTMLElement, photo: HTMLCanvasElement, onRetake?: () =
 }
 async function countdownAt(cam: HTMLElement, slot: HTMLElement) {
   placeCam(slot, cam)
-  for (let n = 3; n >= 1; n--) { countEl.textContent = String(n); pulse(countEl, 'go'); await delay(700) }
+  for (let n = 5; n >= 1; n--) { countEl.textContent = String(n); pulse(countEl, 'go'); await delay(1000) }
   pulse(flashEl, 'go'); await delay(90)
 }
 
